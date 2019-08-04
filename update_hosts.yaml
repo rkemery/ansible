@@ -1,0 +1,28 @@
+---
+
+- hosts: all
+  gather_facts: yes
+  become: yes
+  strategy: free
+
+  tasks:
+    - name: update the apt cache
+      apt: >
+        update_cache=yes
+        cache_valid_time=300
+        autoclean=yes
+        autoremove=yes
+      register: apt_update
+      when: ansible_distribution=='Debian' or ansible_distribution=='Ubuntu'
+      # - debug: var=apt_update.stdout_lines
+
+    - name: upgrade all packages
+      apt:
+        upgrade: safe
+        dpkg_options: "force-confold,force-confdef,log=\
+          /var/log/apt-upgrade_{{ ansible_date_time.date }}-\
+          {{ ansible_date_time.time }}.log"
+        cache_valid_time: 300
+      register: apt_upgrade
+      when: ansible_distribution=='Debian' or ansible_distribution=='Ubuntu'
+      # - debug: var=apt_upgrade.stdout_lines
